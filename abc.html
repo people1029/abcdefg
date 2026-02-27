@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打地鼠游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a5f7a, #159895);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+            color: #FFD700;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-box {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 12px 20px;
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        
+        .info-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #FFD700;
+        }
+        
+        .score, .time {
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .hole {
+            width: 150px;
+            height: 120px;
+            background-color: #8B4513;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 10px 0 rgba(0, 0, 0, 0.3), 0 5px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .hole:active {
+            transform: scale(0.95);
+        }
+        
+        .hole::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            background-color: #654321;
+            border-radius: 50%;
+            top: -15px;
+            left: 0;
+        }
+        
+        .mole {
+            width: 100px;
+            height: 100px;
+            background-color: #8B4513;
+            border-radius: 50% 50% 40% 40%;
+            position: absolute;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 0.3s;
+            cursor: pointer;
+        }
+        
+        .mole.active {
+            bottom: 10px;
+        }
+        
+        .mole::before, .mole::after {
+            content: '';
+            position: absolute;
+            background-color: #000;
+            border-radius: 50%;
+        }
+        
+        .mole::before {
+            width: 20px;
+            height: 20px;
+            top: 30px;
+            left: 25px;
+        }
+        
+        .mole::after {
+            width: 20px;
+            height: 20px;
+            top: 30px;
+            right: 25px;
+        }
+        
+        .mole .nose {
+            position: absolute;
+            width: 15px;
+            height: 10px;
+            background-color: #FF9999;
+            border-radius: 50%;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #startBtn:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+        }
+        
+        #resetBtn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        #resetBtn:hover {
+            background-color: #d32f2f;
+            transform: translateY(-3px);
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .hammer {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #8B4513;
+            border-radius: 50% 20% 50% 50%;
+            transform: rotate(-45deg);
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .hammer.active {
+            opacity: 1;
+        }
+        
+        .hammer::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 20px;
+            background-color: #A0522D;
+            border-radius: 10px;
+            top: 30px;
+            left: 40px;
+            transform: rotate(45deg);
+        }
+        
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                grid-gap: 15px;
+            }
+            
+            .hole {
+                width: 120px;
+                height: 100px;
+            }
+            
+            .mole {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .info-box {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+                grid-gap: 10px;
+            }
+            
+            .hole {
+                width: 90px;
+                height: 80px;
+            }
+            
+            .mole {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .mole::before, .mole::after {
+                width: 12px;
+                height: 12px;
+                top: 20px;
+            }
+            
+            .mole::before {
+                left: 15px;
+            }
+            
+            .mole::after {
+                right: 15px;
+            }
+            
+            .mole .nose {
+                top: 35px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        .hit-effect {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 0, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: hit 0.5s ease-out;
+            z-index: 5;
+        }
+        
+        @keyframes hit {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            display: none;
+        }
+        
+        .game-over-content {
+            background-color: #159895;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-over h2 {
+            font-size: 3rem;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+        
+        .game-over p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        #restartBtn {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.3rem;
+            padding: 15px 40px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-gamepad"></i> 打地鼠游戏</h1>
+            <p>点击出现的地鼠获得分数，看看你能得多少分！</p>
+        </header>
+        
+        <div class="game-info">
+            <div class="info-box">
+                <h3>得分</h3>
+                <div class="score" id="score">0</div>
+            </div>
+            <div class="info-box">
+                <h3>时间</h3>
+                <div class="time" id="time">60</div>
+            </div>
+            <div class="info-box">
+                <h3>最高分</h3>
+                <div class="score" id="high-score">0</div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="game-board" id="gameBoard">
+                <!-- 地鼠洞将通过JS生成 -->
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn">
+                    <i class="fas fa-play"></i> 开始游戏
+                </button>
+                <button id="resetBtn">
+                    <i class="fas fa-redo"></i> 重置游戏
+                </button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 游戏说明</h3>
+            <ul>
+                <li>点击"开始游戏"按钮开始游戏，游戏时间为60秒</li>
+                <li>点击从洞中冒出的地鼠，每打中一只得10分</li>
+                <li>地鼠出现的时间会逐渐缩短，游戏难度会逐渐增加</li>
+                <li>游戏结束后可以查看你的得分并与最高分比较</li>
+                <li>在游戏板上移动鼠标会显示锤子，点击即可敲打地鼠</li>
+            </ul>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <div class="game-over-content">
+                <h2>游戏结束!</h2>
+                <p>你的得分: <span id="final-score">0</span></p>
+                <p>最高分: <span id="final-high-score">0</span></p>
+                <button id="restartBtn">
+                    <i class="fas fa-play"></i> 重新开始
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>打地鼠游戏 - 使用HTML、CSS和JavaScript创建 | 使用鼠标或触摸屏点击地鼠</p>
+        </footer>
+    </div>
+
+    <!-- 锤子元素 -->
+    <div class="hammer" id="hammer"></div>
+
+    <script>
+        // 游戏变量
+        let score = 0;
+        let timeLeft = 60;
+        let highScore = localStorage.getItem('moleHighScore') || 0;
+        let gameInterval;
+        let moleInterval;
+        let gameActive = false;
+        let moleSpeed = 1000; // 地鼠出现速度（毫秒）
+        
+        // DOM元素
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const highScoreElement = document.getElementById('high-score');
+        const gameBoard = document.getElementById('gameBoard');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const gameOverScreen = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalHighScoreElement = document.getElementById('final-high-score');
+        const hammer = document.getElementById('hammer');
+        
+        // 初始化游戏板
+        function initGameBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'hole';
+                hole.dataset.index = i;
+                
+                const mole = document.createElement('div');
+                mole.className = 'mole';
+                mole.dataset.index = i;
+                
+                const nose = document.createElement('div');
+                nose.className = 'nose';
+                mole.appendChild(nose);
+                
+                hole.appendChild(mole);
+                gameBoard.appendChild(hole);
+                
+                // 添加点击事件
+                hole.addEventListener('click', () => hitMole(i));
+            }
+        }
+        
+        // 随机显示地鼠
+        function showRandomMole() {
+            if (!gameActive) return;
+            
+            // 隐藏所有地鼠
+            const moles = document.querySelectorAll('.mole');
+            moles.forEach(mole => mole.classList.remove('active'));
+            
+            // 随机选择一个洞显示地鼠
+            const randomIndex = Math.floor(Math.random() * 9);
+            const randomMole = document.querySelector(`.mole[data-index="${randomIndex}"]`);
+            randomMole.classList.add('active');
+            
+            // 随机时间后隐藏地鼠
+            setTimeout(() => {
+                randomMole.classList.remove('active');
+            }, moleSpeed - 100);
+        }
+        
+        // 打地鼠
+        function hitMole(index) {
+            if (!gameActive) return;
+            
+            const mole = document.querySelector(`.mole[data-index="${index}"]`);
+            
+            // 检查是否打中地鼠
+            if (mole.classList.contains('active')) {
+                // 增加分数
+                score += 10;
+                scoreElement.textContent = score;
+                
+                // 创建打击效果
+                const hole = document.querySelector(`.hole[data-index="${index}"]`);
+                const hitEffect = document.createElement('div');
+                hitEffect.className = 'hit-effect';
+                hitEffect.style.left = `${hole.offsetLeft + hole.offsetWidth / 2}px`;
+                hitEffect.style.top = `${hole.offsetTop + hole.offsetHeight / 2}px`;
+                gameBoard.appendChild(hitEffect);
+                
+                // 播放打击音效（模拟）
+                playHitSound();
+                
+                // 移除打击效果
+                setTimeout(() => {
+                    hitEffect.remove();
+                }, 500);
+                
+                // 隐藏地鼠
+                mole.classList.remove('active');
+                
+                // 逐渐增加游戏难度
+                if (score % 50 === 0 && moleSpeed > 400) {
+                    moleSpeed -= 100;
+                    clearInterval(moleInterval);
+                    moleInterval = setInterval(showRandomMole, moleSpeed);
+                }
+            }
+        }
+        
+        // 模拟打击音效
+        function playHitSound() {
+            // 由于我们不在实际服务器上，这里用简单的音频API模拟
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.log("音频上下文不支持");
+            }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            if (gameActive) return;
+            
+            // 重置游戏状态
+            score = 0;
+            timeLeft = 60;
+            moleSpeed = 1000;
+            gameActive = true;
+            
+            // 更新显示
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            
+            // 开始计时器
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            // 开始地鼠出现
+            moleInterval = setInterval(showRandomMole, moleSpeed);
+            
+            // 更新按钮状态
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-pause"></i> 游戏中...';
+            startBtn.style.backgroundColor = '#888';
+        }
+        
+        // 结束游戏
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(moleInterval);
+            
+            // 隐藏所有地鼠
+            const moles = document.querySelectorAll('.mole');
+            moles.forEach(mole => mole.classList.remove('active'));
+            
+            // 更新最高分
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('moleHighScore', highScore);
+            }
+            
+            // 显示游戏结束画面
+            finalScoreElement.textContent = score;
+            finalHighScoreElement.textContent = highScore;
+            gameOverScreen.style.display = 'flex';
+            
+            // 更新按钮状态
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始游戏';
+            startBtn.style.backgroundColor = '#4CAF50';
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(moleInterval);
+            
+            // 重置游戏状态
+            score = 0;
+            timeLeft = 60;
+            moleSpeed = 1000;
+            
+            // 更新显示
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            highScoreElement.textContent = highScore;
+            
+            // 隐藏所有地鼠
+            const moles = document.querySelectorAll('.mole');
+            moles.forEach(mole => mole.classList.remove('active'));
+            
+            // 隐藏游戏结束画面
+            gameOverScreen.style.display = 'none';
+            
+            // 更新按钮状态
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始游戏';
+            startBtn.style.backgroundColor = '#4CAF50';
+        }
+        
+        // 鼠标移动时显示锤子
+        document.addEventListener('mousemove', (e) => {
+            hammer.style.left = `${e.clientX - 40}px`;
+            hammer.style.top = `${e.clientY - 40}px`;
+        });
+        
+        // 鼠标按下时显示锤子动画
+        document.addEventListener('mousedown', () => {
+            hammer.classList.add('active');
+        });
+        
+        document.addEventListener('mouseup', () => {
+            hammer.classList.remove('active');
+        });
+        
+        // 触摸设备支持
+        document.addEventListener('touchstart', (e) => {
+            hammer.classList.add('active');
+            const touch = e.touches[0];
+            hammer.style.left = `${touch.clientX - 40}px`;
+            hammer.style.top = `${touch.clientY - 40}px`;
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            hammer.style.left = `${touch.clientX - 40}px`;
+            hammer.style.top = `${touch.clientY - 40}px`;
+        });
+        
+        document.addEventListener('touchend', () => {
+            hammer.classList.remove('active');
+        });
+        
+        // 事件监听
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        restartBtn.addEventListener('click', resetGame);
+        
+        // 初始化游戏
+        function initGame() {
+            initGameBoard();
+            highScoreElement.textContent = highScore;
+        }
+        
+        // 页面加载时初始化游戏
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
